@@ -13,7 +13,7 @@ RUN microdnf -y --refresh \
                                                 gzip \
                                                 python3.12 \
                                                 python3.12-pip \
-    && microdnf -y clean all \
+    && microdnf clean all \
     && rm -rf /var/cache/dnf /var/cache/yum \
     && git --version \
     && python3.12 --version \
@@ -25,7 +25,8 @@ RUN microdnf -y --refresh \
 COPY requirements.txt .
 
 RUN python3.12 -m pip install --no-cache-dir -r requirements.txt \
-    && ansible --version
+    && ansible --version \
+    && jinja2 --version
 
 # Install helm
 ARG HELM_VERSION=3.19.0-linux-amd64 \
@@ -38,6 +39,13 @@ RUN curl -kLso helm-v${HELM_VERSION}.tar.gz "https://get.helm.sh/helm-v${HELM_VE
     && helm plugin install --version=${HELM_DIFF_VERSION} https://github.com/databus23/helm-diff \
     && helm plugin list \
     && helm diff version
+
+# Install yq
+ARG YQ_VERSION=4.47.2
+RUN curl -kLso yq_linux_amd64.tar.gz "https://github.com/mikefarah/yq/releases/download/v${YQ_VERSION}/yq_linux_amd64.tar.gz" \
+    && tar -zxvf yq_linux_amd64.tar.gz \
+    && install -o root -g root -m 0755 yq_linux_amd64 /usr/local/bin/yq \
+    && yq --version
 
 # Install kubectl
 ARG KUBECTL_VERSION=1.34.0
